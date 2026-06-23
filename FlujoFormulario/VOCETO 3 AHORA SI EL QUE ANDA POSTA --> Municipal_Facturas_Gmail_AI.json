@@ -1,0 +1,258 @@
+{
+  "updatedAt": "2026-06-23T18:36:33.083Z",
+  "createdAt": "2026-06-23T18:36:27.151Z",
+  "id": "XaOgmLKFPWVJSOBA",
+  "name": "VOCETO 3 AHORA SI EL QUE ANDA POSTA --> Municipal_Facturas_Gmail_AI",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "includeSpamTrash": true,
+          "labelIds": [
+            "UNREAD",
+            "INBOX"
+          ],
+          "q": "=subject:\"Factura Tecnoteca\"",
+          "readStatus": "unread"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "id": "8b3f55b5-351f-4dab-8395-0b5615a5c9d1",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2016,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "circulorojotecnoteca@gmail.com",
+        "subject": "¿Los datos son correctos?",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "id": "6e18a208-f41d-40ae-b2d0-9a95efa3e275",
+      "name": "Enviar Validacion Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        624
+      ],
+      "webhookId": "f07c7365-da55-41d5-a7c2-f43a1b535594"
+    },
+    {
+      "parameters": {
+        "sendTo": "circulorojotecnoteca@gmail.com",
+        "subject": "={{ $('Gmail Trigger').item.json.threadId }}",
+        "emailType": "text",
+        "message": "Formulario Terminado",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": ""
+              }
+            ]
+          }
+        }
+      },
+      "id": "3a960633-874f-483d-bc0b-96aef9d67df9",
+      "name": "Enviar Documento Final",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -1136,
+        368
+      ],
+      "webhookId": "27396dd3-4fec-450c-8449-f5e0c4248ff9"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# CONTEXTO\nFormas parte de un sistema de automatización administrativa municipal destinado al procesamiento de facturas recibidas por correo electrónico. Tu función es analizar el texto extraído de una factura, identificar el nomenclador de gasto más adecuado según la normativa municipal vigente y devolver una respuesta estrictamente estructurada en formato JSON.\n\n---\n\n# ROL\nActúas como un Analista Administrativo Municipal Especializado en Interpretación de Facturas y Clasificación Presupuestaria (Argentina). Posees experiencia en identificar CUIT, IVA, conceptos facturados y aplicar catálogos presupuestarios.\n\n---\n\n# INSTRUCCIONES DE EXTRACCIÓN\nAnaliza el texto de la factura provisto al final de este prompt y extrae los siguientes campos. \n\nReglas críticas:\n1. La descripción del concepto facturado es el criterio principal de clasificación. Si es ambigua, usa la razón social o rubro.\n2. Si un campo no aparece en el texto, usa obligatoriamente el valor null (o 0 para importes).\n3. Valida la coherencia matemática: importe_neto + importe_iva ≈ importe_total. Si hay diferencias, regístralas en \"advertencias\".\n\n---\n\n# CATALOGO DE NOMENCLADORES OFICIAL\nUtiliza ÚNICAMENTE este catálogo para asignar los campos \"nomenclador_sugerido\" y \"nomenclador_descripcion\".\n\n[02.00.00.00] BIENES DE CONSUMO\n- 02.01.01.00 Alimentos Para Personas\n- 02.01.02.00 Alimentos Para Animales\n- 02.01.05.00 Madera, Corcho y sus Manufacturas\n- 02.02.02.00 Prendas de Vestir\n- 02.04.04.00 Cubiertas y Cámaras de Aire\n- 02.06.05.00 Cemento, Cal y Yeso\n- 02.07.05.00 Herramientas Menores\n\n[03.00.00.00] SERVICIOS NO PERSONALES\n- 03.01.01.00 Energía Eléctrica\n- 03.01.02.00 Agua y Servicios Sanitarios\n- 03.01.03.00 Gas\n- 03.01.04.00 Teléfonos, Télex y Telefax\n- 03.01.05.00 Correos y Telégrafos\n- 03.02.01.00 Alquiler de Edificios y Locales\n- 03.02.02.00 Alquiler de Máquinas, Equipos y Medios de Transporte\n- 03.02.04.00 Alquiler de Fotocopiadoras\n- 03.03.01.00 Mantenimiento y Reparación de Edificios y Locales\n- 03.03.02.00 Mantenimiento y Reparación de Vehículos\n- 03.03.03.00 Mantenimiento y Reparación de Maquinaria y Equipo\n- 03.03.04.00 Limpieza, Aseo y Fumigación de Edificios y Locales\n- 03.04.03.00 Jurídicos\n- 03.04.04.00 Contabilidad, Auditoría y Administración\n- 03.04.05.00 Capacitación y Educación\n- 03.04.06.00 Informática y Sistemas de Información\n- 03.05.01.00 Transporte\n- 03.05.03.00 Imprenta, Publicaciones y Reproducciones\n- 03.05.04.00 Primas y Gastos de Seguros\n- 03.05.05.00 Comisiones y Gastos Bancarios\n- 03.07.00.00 Publicidad y Propaganda\n- 03.08.05.00 Gastos Judiciales\n\n---\n\n# FORMATO DE SALIDA OBLIGATORIO\nDebes responder ÚNICAMENTE con un objeto JSON crudo, sin bloques de código Markdown (sin ```json), que siga exactamente esta estructura:\n\n{\n  \"proveedor_razon_social\": \"Nombre o null\",\n  \"proveedor_cuit\": \"CUIT o null\",\n  \"numero_factura\": \"Número o null\",\n  \"fecha_emision\": \"DD/MM/AAAA o null\",\n  \"descripcion_concepto\": \"Texto extraído o null\",\n  \"importe_neto\": 0.0,\n  \"iva_porcentaje\": 0.0,\n  \"importe_iva\": 0.0,\n  \"importe_total\": 0.0,\n  \"nomenclador_sugerido\": \"Código del catálogo (ej: 03.03.02.00) o null\",\n  \"nomenclador_descripcion\": \"Nombre del nomenclador o null\",\n  \"nivel_confianza\": \"ALTO\" | \"MEDIO\" | \"BAJO\",\n  \"justificacion\": \"Breve explicación de la elección del nomenclador\",\n  \"advertencias\": []\n}\n\n---\n\n# DOCUMENTO A ANALIZAR\nA continuación se presenta el texto extraído del PDF de la factura:\n\n{{ $json.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1408,
+        624
+      ],
+      "id": "25e6395e-90ab-40d8-bb68-b82d82516775",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1344,
+        832
+      ],
+      "id": "a0589397-f05a-4377-ad34-c0cd8b6f3ec9",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1552,
+        832
+      ],
+      "id": "72830b49-21a2-446a-b907-51d59a612eb6",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {
+          "keepSource": "json"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -1728,
+        624
+      ],
+      "id": "348eb17f-2c44-4466-8464-2b8fc213f61d",
+      "name": "Extract from File",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-oss-120b:free",
+          "mode": "list",
+          "cachedResultName": "openai/gpt-oss-120b:free"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1440,
+        384
+      ],
+      "id": "90a32b4e-8ebb-4026-ae8e-02f5196fe727",
+      "name": "OpenAI Chat Model"
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Enviar Validacion Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "351b11f6-1fd8-4aee-a41f-71c3d83639ba",
+  "activeVersionId": null,
+  "versionCounter": 3,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-06-23T18:36:27.151Z",
+      "createdAt": "2026-06-23T18:36:27.151Z",
+      "role": "workflow:owner",
+      "workflowId": "XaOgmLKFPWVJSOBA",
+      "projectId": "ov7dGFmVVGXl2GbL",
+      "project": {
+        "updatedAt": "2026-06-18T14:31:13.466Z",
+        "createdAt": "2026-06-17T16:54:44.016Z",
+        "id": "ov7dGFmVVGXl2GbL",
+        "name": "Jaquelina Martínez <agenciaipe.rosario@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "cf4fdce4-4b4a-4ab5-956c-90fe8df5dfe0"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
